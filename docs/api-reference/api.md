@@ -709,6 +709,7 @@ Package v1alpha1 contains API Schema definitions for the system v1alpha1 API gro
 - [BIOSVersion](#biosversion)
 - [BIOSVersionSet](#biosversionset)
 - [FirmwareUpdate](#firmwareupdate)
+- [FirmwareUpdateSet](#firmwareupdateset)
 
 
 
@@ -1223,6 +1224,63 @@ FirmwareUpdate is the Schema for the firmwareupdates API.
 | `status` _[FirmwareUpdateStatus](#firmwareupdatestatus)_ |  |  |  |
 
 
+#### FirmwareUpdateSet
+
+
+
+FirmwareUpdateSet is the Schema for the firmwareupdatesets API.
+
+
+
+
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `system.metal.ironcore.dev/v1alpha1` | | |
+| `kind` _string_ | `FirmwareUpdateSet` | | |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[FirmwareUpdateSetSpec](#firmwareupdatesetspec)_ |  |  |  |
+| `status` _[FirmwareUpdateSetStatus](#firmwareupdatesetstatus)_ |  |  |  |
+
+
+#### FirmwareUpdateSetSpec
+
+
+
+FirmwareUpdateSetSpec defines the desired state of FirmwareUpdateSet.
+
+
+
+_Appears in:_
+- [FirmwareUpdateSet](#firmwareupdateset)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `serverSelector` _[LabelSelector](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#labelselector-v1-meta)_ | ServerSelector specifies a label selector to identify the servers that are to be selected. |  |  |
+| `firmwareUpdateTemplate` _[FirmwareUpdateTemplate](#firmwareupdatetemplate)_ | FirmwareUpdateTemplate defines the template for the FirmwareUpdate resource to be applied to the servers.<br />Its ttlSecondsAfterFinished field, if set, causes this FirmwareUpdateSet to be deleted that<br />many seconds after all of its owned FirmwareUpdates have reached the Completed state (it is<br />not propagated to the owned FirmwareUpdates themselves). See FirmwareUpdateTemplate for details. |  |  |
+
+
+#### FirmwareUpdateSetStatus
+
+
+
+FirmwareUpdateSetStatus defines the observed state of FirmwareUpdateSet.
+
+
+
+_Appears in:_
+- [FirmwareUpdateSet](#firmwareupdateset)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `fullyLabeledServers` _integer_ | FullyLabeledServers is the number of servers in the set. |  |  |
+| `availableFirmwareUpdate` _integer_ | AvailableFirmwareUpdate is the number of FirmwareUpdate resources currently created by the set. |  |  |
+| `pendingFirmwareUpdate` _integer_ | PendingFirmwareUpdate is the total number of pending FirmwareUpdate resources in the set. |  |  |
+| `inProgressFirmwareUpdate` _integer_ | InProgressFirmwareUpdate is the total number of FirmwareUpdate resources in the set that are currently in progress. |  |  |
+| `completedFirmwareUpdate` _integer_ | CompletedFirmwareUpdate is the total number of completed FirmwareUpdate resources in the set. |  |  |
+| `failedFirmwareUpdate` _integer_ | FailedFirmwareUpdate is the total number of failed FirmwareUpdate resources in the set. |  |  |
+
+
 #### FirmwareUpdateSpec
 
 
@@ -1239,9 +1297,9 @@ _Appears in:_
 | `dellRepository` _[DellFirmwareRepository](#dellfirmwarerepository)_ | DellRepository describes the network share hosting the Dell update repository/catalog. |  |  |
 | `serverMaintenancePolicy` _[ServerMaintenancePolicy](#servermaintenancepolicy)_ | ServerMaintenancePolicy is a maintenance policy to be enforced on the server. |  |  |
 | `retryPolicy` _[RetryPolicy](#retrypolicy)_ | RetryPolicy defines the retry behavior for automatic retries on transient failures. |  |  |
-| `serverRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#localobjectreference-v1-core)_ | ServerRef is a reference to a specific server to apply the firmware update on. |  |  |
 | `progressDeadlineSeconds` _integer_ | ProgressDeadlineSeconds is the maximum time in seconds to wait without observable forward<br />progress before the update is marked Failed. Defaults to 3600 (1 hour). | 3600 |  |
-| `ttlSecondsAfterFinished` _integer_ | TTLSecondsAfterFinished, if set, causes the FirmwareUpdate to be deleted that many seconds<br />after it reaches Completed state. Failed objects are retained for operator inspection. |  |  |
+| `ttlSecondsAfterFinished` _integer_ | TTLSecondsAfterFinished, if set, causes the FirmwareUpdate to be deleted that many seconds<br />after it reaches Completed state. Failed objects are retained for operator inspection.<br />When set via a FirmwareUpdateSet's firmwareUpdateTemplate, this value is not propagated to<br />the owned FirmwareUpdate children themselves (they are never auto-deleted individually);<br />instead the FirmwareUpdateSet reads it directly from its own template to delete itself once<br />all of its owned FirmwareUpdates have reached Completed. |  |  |
+| `serverRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#localobjectreference-v1-core)_ | ServerRef is a reference to a specific server to apply the firmware update on. |  |  |
 
 
 #### FirmwareUpdateState
@@ -1295,6 +1353,7 @@ FirmwareUpdateTemplate defines the desired firmware update parameters.
 
 
 _Appears in:_
+- [FirmwareUpdateSetSpec](#firmwareupdatesetspec)
 - [FirmwareUpdateSpec](#firmwareupdatespec)
 
 | Field | Description | Default | Validation |
@@ -1302,6 +1361,8 @@ _Appears in:_
 | `dellRepository` _[DellFirmwareRepository](#dellfirmwarerepository)_ | DellRepository describes the network share hosting the Dell update repository/catalog. |  |  |
 | `serverMaintenancePolicy` _[ServerMaintenancePolicy](#servermaintenancepolicy)_ | ServerMaintenancePolicy is a maintenance policy to be enforced on the server. |  |  |
 | `retryPolicy` _[RetryPolicy](#retrypolicy)_ | RetryPolicy defines the retry behavior for automatic retries on transient failures. |  |  |
+| `progressDeadlineSeconds` _integer_ | ProgressDeadlineSeconds is the maximum time in seconds to wait without observable forward<br />progress before the update is marked Failed. Defaults to 3600 (1 hour). | 3600 |  |
+| `ttlSecondsAfterFinished` _integer_ | TTLSecondsAfterFinished, if set, causes the FirmwareUpdate to be deleted that many seconds<br />after it reaches Completed state. Failed objects are retained for operator inspection.<br />When set via a FirmwareUpdateSet's firmwareUpdateTemplate, this value is not propagated to<br />the owned FirmwareUpdate children themselves (they are never auto-deleted individually);<br />instead the FirmwareUpdateSet reads it directly from its own template to delete itself once<br />all of its owned FirmwareUpdates have reached Completed. |  |  |
 
 
 #### RepositoryJob
